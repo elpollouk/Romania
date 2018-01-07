@@ -1,0 +1,5 @@
+# Build Outputs
+/projectserver/app/
+
+# Dependencies
+node_modules/
