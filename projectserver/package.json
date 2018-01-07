@@ -1,17 +1,20 @@
 {
   "name": "projectserver",
   "version": "1.0.0",
-  "description": "",
+  "description": "Tools server for Romania project",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elpollouk/Romania.git"
+  },
   "scripts": {
+    "build": "node_modules/.bin/tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Adrian O'Grady",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.16.2",
-    "gulp": "^3.9.1",
-    "gulp-typescript": "^3.2.3",
     "typescript": "^2.6.2"
   }
 }
