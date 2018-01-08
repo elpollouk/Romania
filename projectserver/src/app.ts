@@ -4,6 +4,8 @@ import { Router } from 'express';
 class App {
     public express: express.Application;
 
+    private _requestCount = 0;
+
     constructor() {
         this.express = express();
         this._routes();
@@ -12,6 +14,7 @@ class App {
     private _routes() {
         let router = express.Router();
         router.get('/', (request, response, next) => {
+            this._requestCount++;
             response.send(`
             <HTML>
                 <HEAD>
@@ -19,6 +22,7 @@ class App {
                 </HEAD>
                 <BODY>
                     <H1>Hello World</H1>
+                    Count = ${this._requestCount}
                 </BODY>
             </HTML>
             `);
