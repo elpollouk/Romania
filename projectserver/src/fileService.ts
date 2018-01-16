@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as pathModule from 'path';
 
 export enum FileType {
     Unknown,
@@ -47,44 +48,32 @@ export default class FileService {
         });
     }
 
-    public getFileList(path: string): Promise<FileEntry[]> {
-        return new Promise<FileEntry[]>((resolve, reject) => {
+    private _readDir(path: string): Promise<string[]> {
+        return new Promise<string[]>((resolve, reject) => {
             fs.readdir(path, (err, files) => {
                 if (!!err) {
                     reject(err);
                 }
                 else {
-                    let list: FileEntry[] = [];
-                    if (files.length == 0) {
-                        resolve(list);
-                        return;
-                    }
-
-                    let promise: Promise<void> = null;
-
-                    for (let i = 0; i < files.length; i++) {
-                        let p = this._getFileStats(path + '/' + files[i])
-                        .then((stats) => {
-                            list.push(new FileEntry(
-                                files[i],
-                                fileStatsToFileType(stats),
-                                stats.size
-                            ));
-                        }, reject);
-
-                        if (promise == null) {
-                            promise = p;
-                        }
-                        else {
-                            promise = promise.then(() => p);
-                        }
-                    }
-
-                    promise.then(() => {
-                        resolve(list);                        
-                    });
+                    resolve(files);
                 }
             });
         });
+    }
+
+    public async getFileList(path: string): Promise<FileEntry[]> {
+        let list: FileEntry[] = [];
+        let files = await this._readDir(path);
+
+        for (let i = 0; i < files.length; i++) {
+            let stats = await this._getFileStats(pathModule.join(path, files[i]));
+            list.push(new FileEntry(
+                files[i],
+                fileStatsToFileType(stats),
+                stats.size
+            ));
+        };
+
+        return list;
     }
 }
