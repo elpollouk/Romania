@@ -27,35 +27,44 @@ describe('FileService', () => {
 
     let stubReaddir: sinon.SinonStub;
     let stubStat: sinon.SinonStub;
+    let mockFileSystem;
+
+    function addMockFile(path: string, size: number) {
+        mockFileSystem.push({
+            path: path,
+            size: size,
+            isFile: true
+        });
+    }
 
     beforeEach(() => {
+        mockFileSystem = [];
+
         stubReaddir = sinon.stub(fs, 'readdir').callsFake((path, handler) => {
-            handler(null, [
-                'a.txt', 'b.bin', 'c.png'
-            ]);
-        });
+            let result: string[] = [];
 
-        stubStat = sinon.stub(fs, 'stat').callsFake((path, handler) => {
-            let result;
-
-            switch (path) {
-                case 'a.txt':
-                    result = statEntry(5, true);
-                    break;
-
-                case 'b.bin':
-                    result = statEntry(7, true);
-                    break;
-
-                case 'c.png':
-                    result = statEntry(11, true);
-                    break;
-
-                default:
-                    throw new Error(`Unexpected path: ${path}`);
+            for (var i = 0; i < mockFileSystem.length; i++) {
+                result.push(mockFileSystem[i].path);
             }
 
             handler(null, result);
+        });
+
+        stubStat = sinon.stub(fs, 'stat').callsFake((path, handler) => {
+            let entry = null;
+
+            for (let i = 0; i < mockFileSystem.length; i++) {
+                if (mockFileSystem[i].path === path) {
+                    entry = mockFileSystem[i];
+                    break;
+                }
+            }
+
+            if (!entry) {
+                throw new Error(`Unexpected path: ${path}`);
+            }
+            
+            handler(null, statEntry(entry.size, entry.isFile));
         });
     })
 
@@ -65,6 +74,10 @@ describe('FileService', () => {
     });
 
     it('should return the correct file list', (done) => {
+        addMockFile('a.txt', 5);
+        addMockFile('b.bin', 7);
+        addMockFile('c.png', 11);
+
         let fs = new FileService();
         fs.getFileList('.')
         .then((files) => {
